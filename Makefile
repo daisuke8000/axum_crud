@@ -6,3 +6,6 @@ fmt:
 
 test: fmt
 	cargo test
+
+dev: fmt
+	cargo run
