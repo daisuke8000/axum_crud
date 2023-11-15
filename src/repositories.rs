@@ -5,6 +5,7 @@ use std::{
     sync::{Arc, RwLock, RwLockReadGuard, RwLockWriteGuard},
 };
 use thiserror::Error;
+use validator::Validate;
 
 // **point 1**
 #[derive(Debug, Error)]
@@ -30,8 +31,10 @@ pub struct Todo {
     completed: bool,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Serialize, Validate, Deserialize, Clone, PartialEq, Eq)]
 pub struct CreateTodo {
+    #[validate(length(min = 1, message = "Can not be empty"))]
+    #[validate(length(max = 100, message = "Over text length"))]
     text: String,
 }
 
@@ -42,8 +45,10 @@ impl CreateTodo {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Serialize, Validate, Deserialize, Clone, PartialEq, Eq)]
 pub struct UpdateTodo {
+    #[validate(length(min = 1, message = "Can not be empty"))]
+    #[validate(length(max = 100, message = "Over text length"))]
     text: Option<String>,
     completed: Option<bool>,
 }
