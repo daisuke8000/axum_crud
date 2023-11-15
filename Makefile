@@ -9,8 +9,8 @@ test: fmt
 
 dev:
 	sqlx database create
-#	sqlx migrate run
-#	cargo run
+	sqlx migrate run
+	cargo run
 
 dc-build:
 	docker-compose build
