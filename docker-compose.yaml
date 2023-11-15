@@ -6,14 +6,21 @@ services:
       dockerfile: Dockerfile
       target: 'database'
     ports:
-      - "15432:15432"
+      - "5432:5432"
     volumes:
       - pgdate:/var/lib/postgresql/data
     environment:
       POSTGRES_PASSWORD: admin
       POSTGRES_USER: admin
       POSTGRES_DB: todos
-      TZ: "Asia/Tokyo"
+      TZ: Asia/Tokyo
     restart: always
+    networks:
+      - app-net
+
 volumes:
   pgdate:
+
+networks:
+  app-net:
+    driver: bridge
