@@ -7,5 +7,13 @@ fmt:
 test: fmt
 	cargo test
 
-dev: fmt
+dev:
+	sqlx database create
+	sqlx migrate run
 	cargo run
+
+dc-build:
+	docker-compose build
+
+dc-up:
+	docker-compose up -d
