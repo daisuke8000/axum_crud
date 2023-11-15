@@ -9,3 +9,9 @@ test: fmt
 
 dev: fmt
 	cargo run
+
+dc-build:
+	docker-compose build
+
+dc-up:
+	docker-compose up -d
