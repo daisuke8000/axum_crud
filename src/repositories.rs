@@ -31,7 +31,7 @@ pub struct Todo {
     completed: bool,
 }
 
-#[derive(Debug, Serialize, Validate,Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Serialize, Validate, Deserialize, Clone, PartialEq, Eq)]
 pub struct CreateTodo {
     #[validate(length(min = 1, message = "Can not be empty"))]
     #[validate(length(max = 100, message = "Over text length"))]

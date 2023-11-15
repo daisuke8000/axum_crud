@@ -1,3 +1,4 @@
+use crate::repositories::{CreateTodo, TodoRepository, UpdateTodo};
 use axum::{
     async_trait,
     extract::{Extension, FromRequest, Path},
@@ -7,37 +8,32 @@ use axum::{
 };
 use hyper::Request;
 use std::sync::Arc;
-use validator::{Validate};
-
-use crate::repositories::{CreateTodo, TodoRepository, UpdateTodo};
+use validator::Validate;
 
 #[derive(Debug)]
-pub struct ValidatedJson<J>(pub J);
+pub struct ValidatedJson<T>(pub T);
 
-// #[async_trait]
-// impl<S, B, J> FromRequest<S, B> for ValidatedJson<J>
-// where
-//     B: Send + 'static,
-//     S: Send + Sync,
-//     J: Validate + 'static,
-//     Json<J>: FromRequest<(), B>,
-// {
-//     type Rejection = (StatusCode, &'static str);
-//
-//     // https://dev.to/ayush1325/validating-json-request-in-axum-2n34
-//     async fn from_request(req: Request<B>, _state: &S) -> Result<Self, Self::Rejection> {
-//         let Json(value) = req.extract::<Json<J>, _>().await.map_err(|_| {
-//             let message = format!("Json parse error: [{}]", "hoge".to_string());
-//             (StatusCode::BAD_REQUEST, message)
-//         })?;
-//
-//         value.validate().map_err(|rejection| {
-//             let message = format!("Validation error: [{}]", rejection).replace('\n', ", ");
-//             (StatusCode::BAD_REQUEST, message)
-//         })?;
-//         Ok(ValidatedJson(value))
-//     }
-// }
+#[async_trait]
+impl<S, B, T> FromRequest<S, B> for ValidatedJson<T>
+where
+    B: Send + 'static,
+    S: Send + Sync,
+    T: Validate + 'static,
+    Json<T>: FromRequest<(), B>,
+{
+    type Rejection = (StatusCode, &'static str);
+
+    // https://dev.to/ayush1325/validating-json-request-in-axum-2n34
+    async fn from_request(req: Request<B>, _state: &S) -> Result<Self, Self::Rejection> {
+        let Json(data) = req
+            .extract::<Json<T>, _>()
+            .await
+            .map_err(|_| (StatusCode::BAD_REQUEST, "Invalid JSON body"))?;
+        data.validate()
+            .map_err(|_| (StatusCode::BAD_REQUEST, "Invalid JSON body"))?;
+        Ok(Self(data))
+    }
+}
 
 // **memo 1**
 // https://qiita.com/Sicut_study/items/5e5d6cce5ba48c225367
