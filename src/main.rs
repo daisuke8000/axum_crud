@@ -1,15 +1,32 @@
 mod handlers;
 mod repositories;
 
-use crate::repositories::todo::{TodoRepository, TodoRepositoryForDb};
+use crate::repositories::{
+    label::{LabelRepositoryForDb},
+    todo::{TodoRepository, TodoRepositoryForDb},
+};
 use axum::{
     extract::Extension,
-    routing::{get, post},
+    routing::{delete, get, post},
     Router,
 };
 use dotenv::dotenv;
-use handlers::todo::{all_todo, create_todo, delete_todo, find_todo, update_todo};
+use handlers::{
+    todo::{
+        all_todo,
+        create_todo,
+        delete_todo,
+        find_todo,
+        update_todo
+    },
+    label::{
+        all_label,
+        create_label,
+        delete_label,
+    },
+};
 use hyper::header::CONTENT_TYPE;
+use repositories::label::LabelRepository;
 use sqlx::PgPool;
 use std::net::SocketAddr;
 use std::{env, sync::Arc};
@@ -29,8 +46,11 @@ async fn main() {
     let pool = PgPool::connect(database_url)
         .await
         .expect(&format!("fail connect database, url is [{}]", database_url));
-    let repository = TodoRepositoryForDb::new(pool.clone());
-    let app = create_app(repository);
+    // let repository = TodoRepositoryForDb::new(pool.clone());
+    let app = create_app(
+        TodoRepositoryForDb::new(pool.clone()),
+        LabelRepositoryForDb::new(pool.clone()),
+    );
     let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
     tracing::debug!("listening on {}", addr);
     axum::Server::bind(&addr)
@@ -39,17 +59,27 @@ async fn main() {
         .unwrap();
 }
 
-fn create_app<T: TodoRepository>(repository: T) -> Router {
+fn create_app<Todo: TodoRepository, Label: LabelRepository>(
+    todo_repository: Todo,
+    label_repository: Label,
+) -> Router {
     Router::new()
         .route("/", get(root))
-        .route("/todos", post(create_todo::<T>).get(all_todo::<T>))
+        .route("/todos", post(create_todo::<Todo>).get(all_todo::<Todo>))
         .route(
             "/todos/:id",
-            get(find_todo::<T>)
-                .delete(delete_todo::<T>)
-                .patch(update_todo::<T>),
+            get(find_todo::<Todo>)
+                .delete(delete_todo::<Todo>)
+                .patch(update_todo::<Todo>),
         )
-        .layer(Extension(Arc::new(repository)))
+        // .layer(Extension(Arc::new(repository)))
+        .route(
+            "/labels",
+            post(create_label::<Label>).get(all_label::<Label>),
+        )
+        .route("/labels/:id", delete(delete_label::<Label>))
+        .layer(Extension(Arc::new(todo_repository)))
+        .layer(Extension(Arc::new(label_repository)))
         .layer(
             CorsLayer::new()
                 .allow_origin(AllowOrigin::exact("http://localhost:3000".parse().unwrap()))
