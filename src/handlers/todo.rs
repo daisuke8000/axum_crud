@@ -1,13 +1,13 @@
 use crate::repositories::todo::{CreateTodo, TodoRepository, UpdateTodo};
 use axum::{
     extract::{Extension, Path},
-    response::IntoResponse,
     http::StatusCode,
+    response::IntoResponse,
     Json,
 };
 
-use std::sync::Arc;
 use super::ValidatedJson;
+use std::sync::Arc;
 
 // **memo 1**
 // https://qiita.com/Sicut_study/items/5e5d6cce5ba48c225367

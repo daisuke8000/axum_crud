@@ -1,21 +1,21 @@
-use axum::{async_trait, extract::{FromRequest}, http::StatusCode, Json, RequestExt};
+use axum::{async_trait, extract::FromRequest, http::StatusCode, Json, RequestExt};
+use hyper::Request;
 use serde::de::DeserializeOwned;
 use validator::Validate;
-use hyper::Request;
 
-pub mod todo;
 pub mod label;
+pub mod todo;
 
 #[derive(Debug)]
 pub struct ValidatedJson<T>(pub T);
 
 #[async_trait]
 impl<S, B, T> FromRequest<S, B> for ValidatedJson<T>
-    where
-        B: Send + 'static,
-        S: Send + Sync,
-        T: Validate + 'static,
-        Json<T>: FromRequest<(), B>,
+where
+    B: Send + 'static,
+    S: Send + Sync,
+    T: Validate + 'static,
+    Json<T>: FromRequest<(), B>,
 {
     type Rejection = (StatusCode, &'static str);
 

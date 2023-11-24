@@ -1,14 +1,14 @@
 use axum::{
     extract::{Extension, Path},
-    response::IntoResponse,
     http::StatusCode,
+    response::IntoResponse,
     Json,
 };
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
-use validator::Validate;
 use crate::repositories::label::LabelRepository;
+use validator::Validate;
 
 use super::ValidatedJson;
 
@@ -33,7 +33,7 @@ pub async fn all_label<T: LabelRepository>(
 
 pub async fn delete_label<T: LabelRepository>(
     Path(id): Path<i32>,
-    Extension(repository): Extension<Arc<T>>
+    Extension(repository): Extension<Arc<T>>,
 ) -> StatusCode {
     repository
         .delete(id)
