@@ -49,18 +49,21 @@ async fn main() {
         .unwrap();
 }
 
-fn create_app<Todo: TodoRepository, Label: LabelRepository>(
-    todo_repository: Todo,
+fn create_app<TodoWithLabelFromRow: TodoRepository, Label: LabelRepository>(
+    todo_repository: TodoWithLabelFromRow,
     label_repository: Label,
 ) -> Router {
     Router::new()
         .route("/", get(root))
-        .route("/todos", post(create_todo::<Todo>).get(all_todo::<Todo>))
+        .route(
+            "/todos",
+            post(create_todo::<TodoWithLabelFromRow>).get(all_todo::<TodoWithLabelFromRow>),
+        )
         .route(
             "/todos/:id",
-            get(find_todo::<Todo>)
-                .delete(delete_todo::<Todo>)
-                .patch(update_todo::<Todo>),
+            get(find_todo::<TodoWithLabelFromRow>)
+                .delete(delete_todo::<TodoWithLabelFromRow>)
+                .patch(update_todo::<TodoWithLabelFromRow>),
         )
         // .layer(Extension(Arc::new(repository)))
         .route(
@@ -86,7 +89,7 @@ async fn root() -> &'static str {
 mod test {
     use super::*;
     use crate::repositories::label::test_utils::LabelRepositoryForMemory;
-    use crate::repositories::todo::{test_utils::TodoRepositoryForMemory, CreateTodo, Todo};
+    use crate::repositories::todo::{test_utils::TodoRepositoryForMemory, CreateTodo, TodoEntity};
     use axum::response::Response;
     use axum::{
         body::Body,
@@ -111,17 +114,19 @@ mod test {
             .unwrap()
     }
 
-    async fn res_to_todo(res: Response) -> Todo {
+    async fn res_to_todo(res: Response) -> TodoEntity {
         let bytes = hyper::body::to_bytes(res.into_body()).await.unwrap();
         let body: String = String::from_utf8(bytes.to_vec()).unwrap();
-        let todo: Todo = serde_json::from_str(&body)
-            .expect(&format!("cannot convert Todo instance. body: {}", body));
+        let todo: TodoEntity = serde_json::from_str(&body).expect(&format!(
+            "cannot convert TodoWithLabelFromRow instance. body: {}",
+            body
+        ));
         todo
     }
 
     #[tokio::test]
     async fn should_created_todo() {
-        let expected = Todo::new(1, "should_return_created_todo".to_string());
+        let expected = TodoEntity::new(1, "should_return_created_todo".to_string());
         let todo_repository = TodoRepositoryForMemory::new();
         let req = build_todo_req_with_json(
             "/todos",
@@ -138,7 +143,7 @@ mod test {
 
     #[tokio::test]
     async fn should_find_todo() {
-        let expected = Todo::new(1, "should_find_todo".to_string());
+        let expected = TodoEntity::new(1, "should_find_todo".to_string());
         let todo_repository = TodoRepositoryForMemory::new();
         todo_repository
             .create(CreateTodo::new("should_find_todo".to_string()))
@@ -155,7 +160,7 @@ mod test {
 
     #[tokio::test]
     async fn should_get_all_todos() {
-        let expected = Todo::new(1, "should_get_all".to_string());
+        let expected = TodoEntity::new(1, "should_get_all".to_string());
         let todo_repository = TodoRepositoryForMemory::new();
         todo_repository
             .create(CreateTodo::new("should_get_all".to_string()))
@@ -168,14 +173,16 @@ mod test {
             .unwrap();
         let bytes = hyper::body::to_bytes(res.into_body()).await.unwrap();
         let body: String = String::from_utf8(bytes.to_vec()).unwrap();
-        let todo: Vec<Todo> = serde_json::from_str(&body)
-            .expect(&format!("cannot convert Todo instance. body: {}", body));
+        let todo: Vec<TodoEntity> = serde_json::from_str(&body).expect(&format!(
+            "cannot convert TodoWithLabelFromRow instance. body: {}",
+            body
+        ));
         assert_eq!(vec![expected], todo);
     }
 
     #[tokio::test]
     async fn should_update_todo() {
-        let expected = Todo::new(1, "should_update_todo".to_string());
+        let expected = TodoEntity::new(1, "should_update_todo".to_string());
         let todo_repository = TodoRepositoryForMemory::new();
         todo_repository
             .create(CreateTodo::new("before_update_todo".to_string()))
