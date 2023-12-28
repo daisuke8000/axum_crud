@@ -144,9 +144,11 @@ mod test {
     #[tokio::test]
     async fn should_find_todo() {
         let expected = TodoEntity::new(1, "should_find_todo".to_string());
+        todo!("Labelデータの追加");
+        let labels = vec![];
         let todo_repository = TodoRepositoryForMemory::new();
         todo_repository
-            .create(CreateTodo::new("should_find_todo".to_string()))
+            .create(CreateTodo::new("should_find_todo".to_string(), labels))
             .await
             .expect("failed create todo");
         let req = build_todo_req_with_empty(Method::GET, "/todos/1");
@@ -161,9 +163,11 @@ mod test {
     #[tokio::test]
     async fn should_get_all_todos() {
         let expected = TodoEntity::new(1, "should_get_all".to_string());
+        todo!("Labelデータの追加");
+        let labels = vec![];
         let todo_repository = TodoRepositoryForMemory::new();
         todo_repository
-            .create(CreateTodo::new("should_get_all".to_string()))
+            .create(CreateTodo::new("should_get_all".to_string(), labels))
             .await
             .expect("failed create todo");
         let req = build_todo_req_with_empty(Method::GET, "/todos");
@@ -183,9 +187,11 @@ mod test {
     #[tokio::test]
     async fn should_update_todo() {
         let expected = TodoEntity::new(1, "should_update_todo".to_string());
+        todo!("Labelデータの追加");
+        let labels = vec![];
         let todo_repository = TodoRepositoryForMemory::new();
         todo_repository
-            .create(CreateTodo::new("before_update_todo".to_string()))
+            .create(CreateTodo::new("before_update_todo".to_string(), labels))
             .await
             .expect("failed create todo");
         let req = build_todo_req_with_json(
@@ -208,9 +214,11 @@ mod test {
 
     #[tokio::test]
     async fn should_delete_todo() {
+        todo!("labelデータの追加");
+        let labels = vec![];
         let todo_repository = TodoRepositoryForMemory::new();
         todo_repository
-            .create(CreateTodo::new("should_delete_todo".to_string()))
+            .create(CreateTodo::new("should_delete_todo".to_string(), labels))
             .await
             .expect("failed create todo");
         let req = build_todo_req_with_empty(Method::DELETE, "/todos/1");
